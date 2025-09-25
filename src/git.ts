@@ -12,10 +12,12 @@ export interface BranchInfo {
 	lastCommitSha: string | null;
 	lastCommitSubject: string | null;
 	isMerged: boolean;
+	ahead: number;
+	behind: number;
 }
 
 const BRANCH_LIST_FORMAT =
-	"%(refname:short)%00%(committerdate:iso8601)%00%(objectname)%00%(contents:subject)";
+	"%(refname)%00%(committerdate:iso8601)%00%(objectname)%00%(contents:subject)";
 
 export class GitOperations {
 	private git: SimpleGit;
@@ -50,11 +52,12 @@ export class GitOperations {
 	): Promise<BranchInfo[]> {
 		const includeRemote = options.includeRemote === true;
 
-		const [localMerged, remoteMerged] = await Promise.all([
+		const [localMerged, remoteMerged, baseBranch] = await Promise.all([
 			this.getMergedSet("local"),
 			includeRemote
 				? this.getMergedSet("remote")
 				: Promise.resolve(new Set<string>()),
+			this.getBaseBranch(),
 		]);
 
 		const localBranches = await this.listBranches("refs/heads/", "local");
@@ -62,18 +65,24 @@ export class GitOperations {
 			? await this.listBranches("refs/remotes/", "remote")
 			: [];
 
-		const withMergedFlags: BranchInfo[] = [
-			...localBranches.map((branch) => ({
-				...branch,
-				isMerged: localMerged.has(branch.ref),
-			})),
-			...remoteBranches.map((branch) => ({
-				...branch,
-				isMerged: remoteMerged.has(branch.ref),
-			})),
-		];
+		const allBranches: Array<
+			Omit<BranchInfo, "isMerged" | "ahead" | "behind">
+		> = [...localBranches, ...remoteBranches];
 
-		return withMergedFlags.sort((a, b) => {
+		const withCommitCounts = await Promise.all(
+			allBranches.map(async (branch) => {
+				const { ahead, behind } = baseBranch
+					? await this.getAheadBehind(branch.ref, baseBranch)
+					: { ahead: 0, behind: 0 };
+				const isMerged =
+					branch.type === "local"
+						? localMerged.has(branch.ref)
+						: remoteMerged.has(branch.ref);
+				return { ...branch, isMerged, ahead, behind };
+			}),
+		);
+
+		return withCommitCounts.sort((a, b) => {
 			if (a.type !== b.type) {
 				return a.type === "local" ? -1 : 1;
 			}
@@ -105,6 +114,52 @@ export class GitOperations {
 		await this.git.push([remote, "--delete", name]);
 	}
 
+	private async getBaseBranch(): Promise<string | null> {
+		const { all: remoteBranches } = await this.git.branch(["-r"]);
+		const defaultRemoteBranches = [
+			"origin/main",
+			"origin/master",
+			"origin/develop",
+		];
+		for (const branch of defaultRemoteBranches) {
+			if (remoteBranches.includes(branch.trim())) {
+				return branch.trim();
+			}
+		}
+
+		const { all: localBranches } = await this.git.branchLocal();
+		const defaultLocalBranches = ["main", "master", "develop"];
+		for (const branch of defaultLocalBranches) {
+			if (localBranches.includes(branch)) {
+				return branch;
+			}
+		}
+
+		return null;
+	}
+
+	private async getAheadBehind(
+		branch: string,
+		base: string,
+	): Promise<{ ahead: number; behind: number }> {
+		if (branch === base) {
+			return { ahead: 0, behind: 0 };
+		}
+		try {
+			// `git rev-list --left-right --count base...branch` returns "behind ahead"
+			const result = await this.git.raw([
+				"rev-list",
+				"--left-right",
+				"--count",
+				`${base}...${branch}`,
+			]);
+			const [behind, ahead] = result.trim().split("\t").map(Number);
+			return { ahead: ahead ?? 0, behind: behind ?? 0 };
+		} catch {
+			return { ahead: 0, behind: 0 };
+		}
+	}
+
 	private async getMergedSet(type: BranchType): Promise<Set<string>> {
 		const args =
 			type === "local" ? ["branch", "--merged"] : ["branch", "-r", "--merged"];
@@ -122,10 +177,10 @@ export class GitOperations {
 	private async listBranches(
 		refPrefix: string,
 		type: BranchType,
-	): Promise<Array<Omit<BranchInfo, "isMerged">>> {
+	): Promise<Array<Omit<BranchInfo, "isMerged" | "ahead" | "behind">>> {
 		const output = await this.git.raw([
 			"for-each-ref",
-			`--format=${BRANCH_LIST_FORMAT}`,
+			`--format=${BRANCH_LIST_FORMAT.replace("%(refname:short)", "%(refname)")}`,
 			refPrefix,
 		]);
 
@@ -135,16 +190,21 @@ export class GitOperations {
 			.filter(Boolean)
 			.map((line) => this.parseBranchLine(line, type))
 			.filter(
-				(branch): branch is Omit<BranchInfo, "isMerged"> => branch !== null,
+				(branch): branch is Omit<BranchInfo, "isMerged" | "ahead" | "behind"> =>
+					branch !== null,
 			);
 	}
 
 	private parseBranchLine(
 		line: string,
 		type: BranchType,
-	): Omit<BranchInfo, "isMerged"> | null {
+	): Omit<BranchInfo, "isMerged" | "ahead" | "behind"> | null {
 		const [ref, dateStr, sha, subject] = line.split("\u0000");
-		if (!ref || ref.endsWith("/HEAD")) {
+
+		const shortRef =
+			ref?.replace(/^refs\/heads\//, "").replace(/^refs\/remotes\//, "") ?? "";
+
+		if (!shortRef || shortRef.endsWith("/HEAD")) {
 			return null;
 		}
 
@@ -161,13 +221,13 @@ export class GitOperations {
 		const lastCommitSha = sha?.trim()?.length ? sha.trim() : null;
 
 		if (type === "remote") {
-			const [remote, ...nameParts] = ref.split("/");
+			const [remote, ...nameParts] = shortRef.split("/");
 			const name = nameParts.join("/");
 			if (!(remote && name) || name === "HEAD") {
 				return null;
 			}
 			return {
-				ref,
+				ref: shortRef,
 				name,
 				type,
 				remote,
@@ -178,8 +238,8 @@ export class GitOperations {
 		}
 
 		return {
-			ref,
-			name: ref,
+			ref: shortRef,
+			name: shortRef,
 			type,
 			lastCommitDate,
 			lastCommitSha,

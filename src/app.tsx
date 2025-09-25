@@ -331,16 +331,15 @@ export default function App({
 			if (state.status === "selecting" && key.escape) {
 				exit();
 			}
-
-			if (state.status === "success" && key.return) {
-				exit();
-			}
 		},
 		{ isActive: true },
 	);
 
 	useEffect(() => {
-		if (state.status === "success" && dryRun) {
+		if (state.status === "success") {
+			if (!dryRun) {
+				setTimeout(() => exit(), 100);
+			}
 			return;
 		}
 		if (state.status === "error") {

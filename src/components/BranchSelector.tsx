@@ -175,8 +175,16 @@ export const BranchSelector = ({
 						const mergedLabel = branch.isMerged ? "✓" : " ";
 						return (
 							<Text key={branch.ref} color={isActive ? "cyan" : undefined}>
-								{mark} {checkbox} {branch.name}{" "}
-								<Text color="gray">[{typeLabel}]</Text>{" "}
+								{mark} {checkbox} {branch.name}
+								{(branch.ahead > 0 || branch.behind > 0) && (
+									<Text color="yellow">
+										{" "}
+										({branch.ahead > 0 && `+${branch.ahead}`}
+										{branch.ahead > 0 && branch.behind > 0 && ", "}
+										{branch.behind > 0 && `-${branch.behind}`})
+									</Text>
+								)}
+								<Text color="gray"> [{typeLabel}]</Text>{" "}
 								<Text color="gray">{formatDate(branch.lastCommitDate)}</Text>{" "}
 								{branch.lastCommitSubject
 									? `- ${branch.lastCommitSubject}`
