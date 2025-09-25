@@ -156,11 +156,11 @@ export const BranchSelector = ({
 			{label && (
 				<Text>
 					{label}
-					{searchTerm && <Text color="gray"> (フィルタ: {searchTerm})</Text>}
+					{searchTerm && <Text color="gray"> (Filter: {searchTerm})</Text>}
 				</Text>
 			)}
 			{filteredBranches.length === 0 ? (
-				<Text color="yellow">一致するブランチがありません。</Text>
+				<Text color="yellow">No matching branches found.</Text>
 			) : (
 				<Box flexDirection="column">
 					{visibleBranches.map((branch) => {
@@ -202,8 +202,8 @@ export const BranchSelector = ({
 			)}
 			<Box marginTop={1}>
 				<Text color="gray">
-					Space: 選択 / Enter: 実行 / Esc: キャンセル / ↑↓: 移動 / 文字:
-					フィルタ
+					Space: select / Enter: submit / Esc: cancel / ↑↓: navigate / Type:
+					filter
 				</Text>
 			</Box>
 		</Box>

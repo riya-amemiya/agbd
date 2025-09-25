@@ -125,7 +125,7 @@ export default function App({
 		setState((prev) => ({
 			...prev,
 			status: "error",
-			message: `エラー: ${message}`,
+			message: `Error: ${message}`,
 		}));
 	}, []);
 
@@ -142,8 +142,8 @@ export default function App({
 				...prev,
 				status: dryRun ? "success" : "deleting",
 				message: dryRun
-					? "DRY-RUN: 削除対象ブランチ"
-					: "ブランチを削除しています...",
+					? "DRY-RUN: Branches to be deleted"
+					: "Deleting branches...",
 			}));
 
 			const results: State["results"] = [];
@@ -173,7 +173,7 @@ export default function App({
 			setState((prev) => ({
 				...prev,
 				status: "success",
-				message: dryRun ? "DRY-RUN 完了" : "削除が完了しました",
+				message: dryRun ? "DRY-RUN complete" : "Deletion complete",
 				results,
 			}));
 		},
@@ -184,7 +184,7 @@ export default function App({
 		setState((prev) => ({
 			...prev,
 			status: "selecting",
-			message: "削除するブランチを選択してください",
+			message: "Select branches to delete",
 			availableBranches: branches,
 		}));
 	}, []);
@@ -202,7 +202,7 @@ export default function App({
 				setState((prev) => ({
 					...prev,
 					status: "success",
-					message: "削除対象のブランチはありません",
+					message: "No branches to delete.",
 					results: [],
 				}));
 				return;
@@ -216,7 +216,7 @@ export default function App({
 			setState((prev) => ({
 				...prev,
 				status: "confirm",
-				message: `対象ブランチ ${plan.length} 件を削除しますか？ Enter: 実行 / Esc: 中断`,
+				message: `Delete ${plan.length} branches? Press Enter to confirm, Esc to cancel`,
 				plan,
 			}));
 		},
@@ -279,8 +279,7 @@ export default function App({
 				setState((prev) => ({
 					...prev,
 					status: "error",
-					message:
-						"削除可能なブランチが選択されていません (保護設定を確認してください)",
+					message: "No deletable branches selected (check protection rules).",
 				}));
 				return;
 			}
@@ -291,7 +290,7 @@ export default function App({
 			setState((prev) => ({
 				...prev,
 				status: "confirm",
-				message: `選択されたブランチ ${plan.length} 件を削除しますか？ Enter: 実行 / Esc: キャンセル`,
+				message: `Delete ${plan.length} selected branches? Press Enter to confirm, Esc to cancel`,
 				plan,
 				selectedBranches: filtered,
 			}));
@@ -304,7 +303,7 @@ export default function App({
 			setState((prev) => ({
 				...prev,
 				status: "error",
-				message: "削除対象がありません",
+				message: "Nothing to delete.",
 			}));
 			return;
 		}
@@ -322,7 +321,7 @@ export default function App({
 					setState((prev) => ({
 						...prev,
 						status: "error",
-						message: "操作をキャンセルしました",
+						message: "Operation cancelled.",
 					}));
 					return;
 				}
@@ -359,7 +358,7 @@ export default function App({
 
 			{state.currentBranch && (
 				<Box marginBottom={1}>
-					<Text color="gray">現在のブランチ: {state.currentBranch}</Text>
+					<Text color="gray">Current branch: {state.currentBranch}</Text>
 				</Box>
 			)}
 

@@ -89,7 +89,7 @@ const parseCleanup = (value: string | undefined): number | undefined => {
 	}
 	const num = Number.parseInt(value, 10);
 	if (Number.isNaN(num) || num < 0) {
-		throw new Error("--cleanup-merged は 0 以上の整数で指定してください");
+		throw new Error("--cleanup-merged must be an integer >= 0");
 	}
 	return num;
 };
@@ -119,7 +119,7 @@ try {
 			switch (command) {
 				case "show": {
 					const { config, sources } = await getConfig();
-					console.log("現在の設定:");
+					console.log("Current configuration:");
 					for (const key in config) {
 						const k = key as keyof typeof config;
 						const source = sources[k] || "default";
@@ -142,7 +142,7 @@ try {
 				}
 				case "reset": {
 					await resetGlobalConfig();
-					console.log(`設定を初期化しました: ${GLOBAL_CONFIG_PATH}`);
+					console.log(`Configuration reset to default: ${GLOBAL_CONFIG_PATH}`);
 					break;
 				}
 				case "set": {
@@ -150,8 +150,8 @@ try {
 					return;
 				}
 				default:
-					console.error(`不明な config コマンド: ${command}`);
-					console.log("利用可能: show, edit, reset, set");
+					console.error(`Unknown config command: ${command}`);
+					console.log("Available commands: show, edit, reset, set");
 					process.exit(1);
 			}
 			return;

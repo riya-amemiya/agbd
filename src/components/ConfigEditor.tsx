@@ -40,10 +40,10 @@ const BooleanItem = ({ label, isSelected }: ItemProps) => (
 
 const formatValue = (value: AgbdConfig[keyof AgbdConfig]) => {
 	if (Array.isArray(value)) {
-		return value.length > 0 ? value.join(", ") : "(未設定)";
+		return value.length > 0 ? value.join(", ") : "(not set)";
 	}
 	if (value === undefined || value === null || value === "") {
-		return "(未設定)";
+		return "(not set)";
 	}
 	return String(value);
 };
@@ -164,7 +164,7 @@ export const ConfigEditor = () => {
 			}
 			const parsed = Number.parseInt(valueText, 10);
 			if (Number.isNaN(parsed) || parsed < 0) {
-				setInputError("0 以上の整数を入力してください");
+				setInputError("Please enter an integer >= 0");
 				return;
 			}
 			setConfig({ ...config, [editingItem]: parsed });
@@ -281,7 +281,7 @@ export const ConfigEditor = () => {
 			case "editing_boolean":
 				return (
 					<Box flexDirection="column">
-						<Text>"{editingItem}" の値を設定:</Text>
+						<Text>Set value for "{editingItem}":</Text>
 						<SelectInput
 							items={[
 								{ label: "true", value: true },
@@ -295,37 +295,37 @@ export const ConfigEditor = () => {
 			case "editing_string":
 				return (
 					<Box flexDirection="column">
-						<Text>文字列を入力してください (空欄で未設定):</Text>
-						<Text color="cyan">{inputBuffer || "<空>"}</Text>
-						<Text color="gray">Enter: 保存 / Esc: キャンセル</Text>
+						<Text>Enter a string (leave empty to unset):</Text>
+						<Text color="cyan">{inputBuffer || "<empty>"}</Text>
+						<Text color="gray">Enter: save / Esc: cancel</Text>
 						{inputError && <Text color="red">{inputError}</Text>}
 					</Box>
 				);
 			case "editing_number":
 				return (
 					<Box flexDirection="column">
-						<Text>数値を入力してください (0 以上, 空欄で未設定):</Text>
-						<Text color="cyan">{inputBuffer || "<空>"}</Text>
-						<Text color="gray">Enter: 保存 / Esc: キャンセル</Text>
+						<Text>Enter a number (&gt;= 0, leave empty to unset):</Text>
+						<Text color="cyan">{inputBuffer || "<empty>"}</Text>
+						<Text color="gray">Enter: save / Esc: cancel</Text>
 						{inputError && <Text color="red">{inputError}</Text>}
 					</Box>
 				);
 			case "editing_array":
 				return (
 					<Box flexDirection="column">
-						<Text>カンマ区切りで値を入力してください:</Text>
-						<Text color="cyan">{inputBuffer || "<空>"}</Text>
-						<Text color="gray">Enter: 保存 / Esc: キャンセル</Text>
+						<Text>Enter comma-separated values:</Text>
+						<Text color="cyan">{inputBuffer || "<empty>"}</Text>
+						<Text color="gray">Enter: save / Esc: cancel</Text>
 					</Box>
 				);
 			case "confirm_quit":
 				return (
 					<Box flexDirection="column">
-						<Text color="yellow">未保存の変更があります。終了しますか？</Text>
+						<Text color="yellow">Unsaved changes detected. Exit?</Text>
 						<SelectInput
 							items={[
-								{ label: "いいえ", value: "no" },
-								{ label: "はい", value: "yes" },
+								{ label: "No", value: "no" },
+								{ label: "Yes", value: "yes" },
 							]}
 							onSelect={handleQuitConfirm}
 						/>
@@ -355,8 +355,8 @@ export const ConfigEditor = () => {
 					</Box>
 					<Box marginTop={1}>
 						<Text>
-							編集する項目を選択してください。'S' で保存, 'Q' で終了。
-							{isDirty && <Text color="yellow"> (未保存)</Text>}
+							Select an item to edit. 'S' to save, 'Q' to exit.
+							{isDirty && <Text color="yellow"> (unsaved)</Text>}
 						</Text>
 					</Box>
 				</>
