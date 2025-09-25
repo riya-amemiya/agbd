@@ -23,7 +23,8 @@ type Status =
 	| "confirm"
 	| "deleting"
 	| "success"
-	| "error";
+	| "error"
+	| "confirm_force";
 
 type Mode = "interactive" | "auto";
 
@@ -42,6 +43,36 @@ interface State {
 	plan: BranchPlanItem[];
 	results: Array<{ branch: BranchInfo; success: boolean; error?: string }>;
 }
+
+const SuccessResults = ({
+	message,
+	results,
+}: {
+	message: string;
+	results: State["results"];
+}) => {
+	const hasErrors = results.some((r) => !r.success);
+	return (
+		<Box flexDirection="column">
+			<Text color={hasErrors ? "yellow" : "green"}>
+				{hasErrors ? "⚠️" : "✅"} {message}
+			</Text>
+			{results.length > 0 && (
+				<Box flexDirection="column" marginTop={1}>
+					{results.map((result) => (
+						<Text
+							key={result.branch.ref}
+							color={result.success ? "green" : "red"}
+						>
+							{result.success ? "✓" : "✕"} {result.branch.name}
+							{result.error ? ` - ${result.error}` : ""}
+						</Text>
+					))}
+				</Box>
+			)}
+		</Box>
+	);
+};
 
 const PROTECTED_DEFAULT = ["main", "master", "develop", "release"];
 
@@ -137,7 +168,7 @@ export default function App({
 	}, []);
 
 	const executePlan = useCallback(
-		async (plan: BranchPlanItem[]) => {
+		async (plan: BranchPlanItem[], forceOverride?: boolean) => {
 			setState((prev) => ({
 				...prev,
 				status: dryRun ? "success" : "deleting",
@@ -160,7 +191,9 @@ export default function App({
 							name: branch.name,
 						});
 					} else {
-						await gitOps.deleteLocalBranch(branch.name, { force });
+						await gitOps.deleteLocalBranch(branch.name, {
+							force: forceOverride || force,
+						});
 					}
 					results.push({ branch, success: true });
 				} catch (error) {
@@ -170,10 +203,34 @@ export default function App({
 				}
 			}
 
+			const failedResults = results.filter((r) => !r.success);
+			const unmergedFailures = failedResults.filter((r) =>
+				r.error?.includes("not fully merged"),
+			);
+
+			if (!force && unmergedFailures.length > 0 && !forceOverride) {
+				const unmergedBranches = plan.filter((p) =>
+					unmergedFailures.some((f) => f.branch.ref === p.branch.ref),
+				);
+				setState((prev) => ({
+					...prev,
+					status: "confirm_force",
+					message: `${unmergedBranches.length} branches are not fully merged. Force delete?`,
+					plan: unmergedBranches,
+					results,
+				}));
+				return;
+			}
+
+			const hasErrors = results.some((result) => !result.success);
 			setState((prev) => ({
 				...prev,
 				status: "success",
-				message: dryRun ? "DRY-RUN complete" : "Deletion complete",
+				message: dryRun
+					? "DRY-RUN complete"
+					: hasErrors
+						? "Failed to delete some branches"
+						: "Deletion complete",
 				results,
 			}));
 		},
@@ -310,6 +367,12 @@ export default function App({
 		executePlan(state.plan);
 	}, [executePlan, state.plan]);
 
+	const handleForceConfirm = useCallback(() => {
+		if (state.plan.length > 0) {
+			executePlan(state.plan, true);
+		}
+	}, [executePlan, state.plan]);
+
 	useInput(
 		(_input, key) => {
 			if (state.status === "confirm") {
@@ -325,6 +388,21 @@ export default function App({
 					}));
 					return;
 				}
+			}
+
+			if (state.status === "confirm_force") {
+				if (key.return) {
+					handleForceConfirm();
+					return;
+				}
+				if (key.escape) {
+					setState((prev) => ({
+						...prev,
+						status: "error",
+						message: "Operation cancelled.",
+					}));
+				}
+				return;
 			}
 
 			if (state.status === "selecting" && key.escape) {
@@ -377,7 +455,31 @@ export default function App({
 					/>
 				)}
 				{state.status === "confirm" && (
-					<Text color="yellow">❓ {sanitizedMessage}</Text>
+					<Box flexDirection="column">
+						<Text color="yellow">❓ {sanitizedMessage}</Text>
+						{state.plan.length > 0 && (
+							<Box flexDirection="column" marginTop={1} paddingLeft={2}>
+								{state.plan.slice(0, 10).map((item) => (
+									<Text key={item.branch.ref}>- {item.branch.name}</Text>
+								))}
+								{state.plan.length > 10 && (
+									<Text color="gray">...and {state.plan.length - 10} more</Text>
+								)}
+							</Box>
+						)}
+					</Box>
+				)}
+				{state.status === "confirm_force" && (
+					<Box flexDirection="column">
+						<Text color="yellow">❓ {sanitizedMessage}</Text>
+						{state.plan.length > 0 && (
+							<Box flexDirection="column" marginTop={1} paddingLeft={2}>
+								{state.plan.map((item) => (
+									<Text key={item.branch.ref}>- {item.branch.name}</Text>
+								))}
+							</Box>
+						)}
+					</Box>
 				)}
 				{state.status === "deleting" && (
 					<Text color="cyan">
@@ -385,22 +487,7 @@ export default function App({
 					</Text>
 				)}
 				{state.status === "success" && (
-					<Box flexDirection="column">
-						<Text color="green">✅ {sanitizedMessage}</Text>
-						{state.results.length > 0 && (
-							<Box flexDirection="column" marginTop={1}>
-								{state.results.map((result) => (
-									<Text
-										key={result.branch.ref}
-										color={result.success ? "green" : "red"}
-									>
-										{result.success ? "✓" : "✕"} {result.branch.name}
-										{result.error ? ` - ${result.error}` : ""}
-									</Text>
-								))}
-							</Box>
-						)}
-					</Box>
+					<SuccessResults message={sanitizedMessage} results={state.results} />
 				)}
 				{state.status === "error" && (
 					<Text color="red">❌ {sanitizedMessage}</Text>
