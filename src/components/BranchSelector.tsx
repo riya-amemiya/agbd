@@ -195,7 +195,7 @@ export const BranchSelector = ({
 					})}
 					{filteredBranches.length > visibleBranches.length && (
 						<Text color="gray">
-							…他 {filteredBranches.length - visibleBranches.length} 件
+							...and {filteredBranches.length - visibleBranches.length} more
 						</Text>
 					)}
 				</Box>

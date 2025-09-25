@@ -23,18 +23,18 @@ Usage
   $ agbd [options]
 
 Options
-    --pattern <regex>          ブランチ名のフィルタに使用する正規表現 / 文字列
-    --remote                   リモートブランチも対象に含める
-    --dry-run                  実際には削除せずに対象のみ表示
-    -y, --yes                  削除前の確認をスキップ
-    --force                    未マージでも削除を強制
-    --protected <list>         カンマ区切りで保護ブランチを指定
-    --default-remote <name>    リモート名のデフォルト値 (remote=true 時)
-    --cleanup-merged <days>    最終更新が指定日数より古いブランチのみ対象
-    --config <command>         設定管理 (show | set | edit | reset)
-    --no-config                設定ファイルを無効化
-    -v, --version              バージョンを表示
-    -h, --help                 このヘルプを表示
+    --pattern <regex>          Filter branches by name (regex or string)
+    --remote                   Include remote branches
+    --dry-run                  Show what would be deleted, without deleting
+    -y, --yes                  Skip confirmation prompts
+    --force                    Force delete non-merged branches
+    --protected <list>         Comma-separated list of protected branches
+    --default-remote <name>    Default remote name (used if remote=true)
+    --cleanup-merged <days>    Filter branches older than N days
+    --config <command>         Manage configuration (show | set | edit | reset)
+    --no-config                Disable loading configuration files
+    -v, --version              Show version
+    -h, --help                 Show this help message
 
 Examples
   $ agbd --pattern feature/ --remote
