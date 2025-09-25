@@ -26,7 +26,7 @@ export class GitOperations {
 		const options: SimpleGitOptions = {
 			baseDir: workingDir || process.cwd(),
 			binary: "git",
-			maxConcurrentProcesses: 1,
+			maxConcurrentProcesses: 10,
 			config: [],
 			trimmed: false,
 		};
