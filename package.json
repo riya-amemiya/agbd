@@ -1,0 +1,56 @@
+{
+	"name": "agbd",
+	"version": "0.1.0",
+	"description": "Interactive CLI to safely inspect and delete Git branches (local and remote)",
+	"license": "MIT",
+	"bin": "dist/cli.js",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/riya-amemiya/agbd.git"
+	},
+	"homepage": "https://github.com/riya-amemiya/agbd#readme",
+	"bugs": {
+		"url": "https://github.com/riya-amemiya/agbd/issues"
+	},
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"test": "biome check .",
+		"lint": "biome check . --write",
+		"ci": "biome ci .",
+		"prepublishOnly": "npm run build"
+	},
+	"files": [
+		"dist"
+	],
+	"keywords": [
+		"git",
+		"branch",
+		"cleanup",
+		"prune",
+		"cli",
+		"ink"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"ink": "6.3.1",
+		"ink-select-input": "6.2.0",
+		"ink-spinner": "5.0.0",
+		"react": "19.1.1",
+		"simple-git": "3.28.0",
+		"valibot": "1.1.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.4",
+		"@sindresorhus/tsconfig": "8.0.1",
+		"@types/bun": "1.2.22",
+		"@types/react": "19.1.13",
+		"chalk": "5.6.2",
+		"ink-testing-library": "4.0.0",
+		"ts-node": "10.9.2",
+		"typescript": "5.9.2"
+	}
+}
