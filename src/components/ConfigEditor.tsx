@@ -184,7 +184,9 @@ export const ConfigEditor = () => {
 
 	const items = config
 		? configKeys
-				.filter((key) => key !== "schemaVersion")
+				.filter(
+					(key) => key !== "schemaVersion" && key !== "detectedDefaultBranch",
+				)
 				.map((key) => ({
 					label: `${key}: ${formatValue(
 						config[key as keyof AgbdConfig] ??

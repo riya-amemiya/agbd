@@ -114,6 +114,40 @@ export class GitOperations {
 		await this.git.push([remote, "--delete", name]);
 	}
 
+	async detectDefaultBranch(remote: string = "origin"): Promise<string | null> {
+		try {
+			const remoteInfo = await this.git.raw(["remote", "show", remote]);
+			const match = remoteInfo.match(/HEAD branch:\s*(.+)/);
+			if (match?.[1]) {
+				return match[1].trim();
+			}
+		} catch (error) {
+			if (error instanceof Error && error.message.includes("No such remote")) {
+				throw error;
+			}
+		}
+
+		try {
+			await this.git.raw(["remote", "set-head", remote, "--auto"]);
+			const symbolicRef = await this.git.raw([
+				"symbolic-ref",
+				`refs/remotes/${remote}/HEAD`,
+			]);
+			const ref = symbolicRef.trim();
+			if (!ref) {
+				return null;
+			}
+			const parts = ref.split("/");
+			const branchName = parts.at(-1);
+			return branchName ?? null;
+		} catch (error) {
+			if (error instanceof Error && error.message.includes("No such remote")) {
+				throw error;
+			}
+			return null;
+		}
+	}
+
 	private async getBaseBranch(): Promise<string | null> {
 		const { all: remoteBranches } = await this.git.branch(["-r"]);
 		const defaultRemoteBranches = [

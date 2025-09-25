@@ -28,6 +28,8 @@ agbd [options]
 - `--protected <list>`: Comma-separated list of branch names/regex patterns to keep (default: `main,master,develop,release`)
 - `--default-remote <name>`: Default remote name used when remote info is missing (default: `origin`)
 - `--cleanup-merged <days>`: Select branches whose last commit is older than the specified number of days
+- `--detect-default`: Detect the remote default branch and add it to the protected list for this run
+- `--save-detected-default`: Detect the default branch and persist it into the local config (`.agbdrc`)
 - `--config <command>`: Manage configuration (`show`, `set`, `edit`, `reset`)
 - `--no-config`: Ignore configuration files and rely on CLI flags + defaults
 - `-v, --version`: Print version
@@ -52,6 +54,7 @@ Use `--no-config` to disable config loading. Values include:
 - `protectedBranches`: string array
 - `defaultRemote`: string
 - `cleanupMergedDays`: number
+- `detectedDefaultBranch`: string (auto-populated when running `--save-detected-default`)
 
 #### Managing Configuration
 

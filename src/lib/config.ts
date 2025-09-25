@@ -26,11 +26,12 @@ const configSchema = object({
 	defaultRemote: optional(string()),
 	cleanupMergedDays: optional(number()),
 	schemaVersion: optional(number()),
+	detectedDefaultBranch: optional(string()),
 });
 
 export type AgbdConfig = InferOutput<typeof configSchema>;
 
-export const configKeys = [
+export const configKeys: (keyof AgbdConfig)[] = [
 	"remote",
 	"dryRun",
 	"yes",
@@ -39,6 +40,7 @@ export const configKeys = [
 	"protectedBranches",
 	"defaultRemote",
 	"cleanupMergedDays",
+	"detectedDefaultBranch",
 	"schemaVersion",
 ] as const;
 
@@ -56,6 +58,7 @@ export const defaultConfig: Omit<AgbdConfig, "schemaVersion"> = {
 	protectedBranches: ["main", "master", "develop"],
 	defaultRemote: "origin",
 	cleanupMergedDays: undefined,
+	detectedDefaultBranch: undefined,
 };
 
 const validateConfig = (config: unknown): AgbdConfig => {
@@ -117,6 +120,38 @@ const findUp = async (
 	return null;
 };
 
+export const findLocalConfigPath = async (
+	cwd: string = process.cwd(),
+): Promise<string | null> => {
+	return findUp(LOCAL_CONFIG_FILE_NAME, cwd);
+};
+
+export const writeLocalConfig = async (
+	config: AgbdConfig,
+	localConfigPath: string,
+): Promise<void> => {
+	await fs.mkdir(dirname(localConfigPath), { recursive: true });
+	await fs.writeFile(localConfigPath, JSON.stringify(config, null, 2), "utf-8");
+};
+
+export const loadLocalConfig = async (
+	cwd: string = process.cwd(),
+): Promise<{ path: string; config: AgbdConfig | null; exists: boolean }> => {
+	const existingPath = await findLocalConfigPath(cwd);
+	if (existingPath) {
+		return {
+			path: existingPath,
+			config: await readConfigFile(existingPath),
+			exists: true,
+		};
+	}
+	return {
+		path: join(cwd, LOCAL_CONFIG_FILE_NAME),
+		config: null,
+		exists: false,
+	};
+};
+
 export const getConfig = async (
 	cwd: string = process.cwd(),
 ): Promise<ConfigResult> => {
@@ -128,10 +163,7 @@ export const getConfig = async (
 	);
 
 	const globalConfig = await readConfigFile(globalConfigPath);
-	const localConfigPath = await findUp(LOCAL_CONFIG_FILE_NAME, cwd);
-	const localConfig = localConfigPath
-		? await readConfigFile(localConfigPath)
-		: null;
+	const { config: localConfig } = await loadLocalConfig(cwd);
 
 	const config: AgbdConfig = {
 		...defaultConfig,

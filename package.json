@@ -1,6 +1,6 @@
 {
 	"name": "agbd",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"description": "Interactive CLI to safely inspect and delete Git branches (local and remote)",
 	"license": "MIT",
 	"bin": "dist/cli.js",

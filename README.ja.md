@@ -26,6 +26,8 @@ agbd [options]
 - `--protected <list>`: 保護ブランチのリスト（カンマ区切り／正規表現可、デフォルト: `main,master,develop,release`）
 - `--default-remote <name>`: リモート名のデフォルト値（省略時は `origin`）
 - `--cleanup-merged <days>`: 最終コミットが指定日数より古いブランチのみ対象
+- `--detect-default`: リモートのデフォルトブランチを検出し、今回の実行で保護対象に追加
+- `--save-detected-default`: デフォルトブランチを検出し、ローカル設定（`.agbdrc`）に保存
 - `--config <command>`: 設定の管理 (`show`, `set`, `edit`, `reset`)
 - `--no-config`: 設定ファイルを無視してデフォルト＋CLIフラグのみ適用
 - `-v, --version`: バージョン表示
@@ -50,6 +52,7 @@ agbd [options]
 - `protectedBranches`: string[]
 - `defaultRemote`: string
 - `cleanupMergedDays`: number
+- `detectedDefaultBranch`: string（`--save-detected-default` 実行時に自動更新）
 
 #### 設定管理コマンド
 

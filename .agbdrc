@@ -1,0 +1,6 @@
+{
+  "detectedDefaultBranch": "main",
+  "protectedBranches": [
+    "main"
+  ]
+}
