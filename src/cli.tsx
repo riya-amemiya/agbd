@@ -2,18 +2,26 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ArgParser, GitOperations, writeLocalConfig } from "ag-toolkit";
+import {
+	ArgParser,
+	GitOperations,
+	loadConfig,
+	loadLocalConfig,
+	resetGlobalConfig,
+	writeLocalConfig,
+} from "ag-toolkit";
 import chalk from "chalk";
 import { render } from "ink";
 import App from "./app.js";
 import { ConfigEditor } from "./components/ConfigEditor.js";
 import type { AgbdConfig } from "./lib/config.js";
 import {
+	CONFIG_DIR_NAME,
+	CONFIG_FILE_NAME,
 	defaultConfig,
 	GLOBAL_CONFIG_PATH,
-	getConfig,
-	loadLocalConfig,
-	resetGlobalConfig,
+	LOCAL_CONFIG_FILE_NAME,
+	validateConfig,
 } from "./lib/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -129,7 +137,13 @@ try {
 			const command = cli.flags.config;
 			switch (command) {
 				case "show": {
-					const { config, sources } = await getConfig();
+					const { config, sources } = await loadConfig({
+						toolName: CONFIG_DIR_NAME,
+						configFile: CONFIG_FILE_NAME,
+						localConfigFile: LOCAL_CONFIG_FILE_NAME,
+						defaultConfig,
+						validate: validateConfig,
+					});
 					console.log("Current configuration:");
 					const sourceColors = {
 						default: chalk.gray,
@@ -162,7 +176,11 @@ try {
 					return;
 				}
 				case "reset": {
-					await resetGlobalConfig();
+					await resetGlobalConfig(
+						defaultConfig,
+						CONFIG_DIR_NAME,
+						CONFIG_FILE_NAME,
+					);
 					console.log(`Configuration reset to default: ${GLOBAL_CONFIG_PATH}`);
 					break;
 				}
@@ -180,7 +198,13 @@ try {
 
 		const { config } = cli.flags.noConfig
 			? { config: defaultConfig }
-			: await getConfig();
+			: await loadConfig({
+					toolName: CONFIG_DIR_NAME,
+					configFile: CONFIG_FILE_NAME,
+					localConfigFile: LOCAL_CONFIG_FILE_NAME,
+					defaultConfig,
+					validate: validateConfig,
+				});
 
 		const cliProtected = parseProtected(cli.flags.protected);
 		const resolvedDefaultRemote =
@@ -226,7 +250,7 @@ try {
 		if (cli.flags.saveDetectedDefault) {
 			if (detectedDefaultBranch) {
 				const { path: localConfigPath, config: existingLocalConfig } =
-					await loadLocalConfig();
+					await loadLocalConfig(LOCAL_CONFIG_FILE_NAME, validateConfig);
 				const nextLocalConfig: AgbdConfig = {
 					...(existingLocalConfig ?? {}),
 					detectedDefaultBranch,
