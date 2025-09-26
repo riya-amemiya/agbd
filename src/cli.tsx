@@ -2,12 +2,11 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ArgParser, GitOperations, writeLocalConfig } from "ag-toolkit";
 import chalk from "chalk";
 import { render } from "ink";
 import App from "./app.js";
 import { ConfigEditor } from "./components/ConfigEditor.js";
-import { GitOperations } from "./git.js";
-import { ArgParser } from "./lib/arg-parser.js";
 import type { AgbdConfig } from "./lib/config.js";
 import {
 	defaultConfig,
@@ -15,7 +14,6 @@ import {
 	getConfig,
 	loadLocalConfig,
 	resetGlobalConfig,
-	writeLocalConfig,
 } from "./lib/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -239,7 +237,7 @@ try {
 						]),
 					),
 				};
-				await writeLocalConfig(nextLocalConfig, localConfigPath);
+				await writeLocalConfig(localConfigPath, nextLocalConfig);
 				const action = existingLocalConfig ? "Updated" : "Created";
 				console.log(
 					`${action} local config at ${localConfigPath} with detected default branch '${detectedDefaultBranch}'.`,

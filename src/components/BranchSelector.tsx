@@ -1,7 +1,7 @@
+import type { BranchInfo } from "ag-toolkit";
 import type { Key } from "ink";
 import { Box, Text, useInput } from "ink";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { BranchInfo } from "../git.js";
 
 type Props = {
 	branches: BranchInfo[];
