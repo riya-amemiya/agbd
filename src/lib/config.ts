@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { getGlobalConfigPath } from "ag-toolkit";
 import {
 	array,
 	boolean,
@@ -126,14 +127,6 @@ export const findLocalConfigPath = async (
 	return findUp(LOCAL_CONFIG_FILE_NAME, cwd);
 };
 
-export const writeLocalConfig = async (
-	config: AgbdConfig,
-	localConfigPath: string,
-): Promise<void> => {
-	await fs.mkdir(dirname(localConfigPath), { recursive: true });
-	await fs.writeFile(localConfigPath, JSON.stringify(config, null, 2), "utf-8");
-};
-
 export const loadLocalConfig = async (
 	cwd: string = process.cwd(),
 ): Promise<{ path: string; config: AgbdConfig | null; exists: boolean }> => {
@@ -189,9 +182,7 @@ export const getConfig = async (
 	};
 };
 
-export const GLOBAL_CONFIG_PATH = join(
-	homedir(),
-	".config",
+export const GLOBAL_CONFIG_PATH = getGlobalConfigPath(
 	CONFIG_DIR_NAME,
 	CONFIG_FILE_NAME,
 );

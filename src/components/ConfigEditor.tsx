@@ -1,3 +1,4 @@
+import { isDeepEqual } from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import SelectInput, { type ItemProps } from "ink-select-input";
 import Spinner from "ink-spinner";
@@ -9,7 +10,6 @@ import {
 	getConfig,
 	writeGlobalConfig,
 } from "../lib/config.js";
-import { isDeepEqual } from "../lib/isDeepEqual.js";
 
 type ConfigItemKey = keyof AgbdConfig;
 
