@@ -1,4 +1,4 @@
-import type { BranchInfo } from "ag-toolkit";
+import { type BranchInfo, formatDate } from "ag-toolkit";
 import type { Key } from "ink";
 import { Box, Text, useInput } from "ink";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -12,13 +12,6 @@ type Props = {
 };
 
 const SEARCHABLE_FIELDS = ["name", "ref", "lastCommitSubject"] as const;
-
-const formatDate = (date: Date | null) => {
-	if (!date) {
-		return "--";
-	}
-	return date.toISOString().split("T")[0] ?? "--";
-};
 
 export const BranchSelector = ({
 	branches,

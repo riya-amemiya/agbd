@@ -1,14 +1,21 @@
-import { isDeepEqual } from "ag-toolkit";
+import {
+	formatConfigValue,
+	isDeepEqual,
+	loadConfig,
+	writeGlobalConfig,
+} from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import SelectInput, { type ItemProps } from "ink-select-input";
 import Spinner from "ink-spinner";
 import { useEffect, useMemo, useState } from "react";
 import {
 	type AgbdConfig,
+	CONFIG_DIR_NAME,
+	CONFIG_FILE_NAME,
 	configKeys,
 	defaultConfig,
-	getConfig,
-	writeGlobalConfig,
+	LOCAL_CONFIG_FILE_NAME,
+	validateConfig,
 } from "../lib/config.js";
 
 type ConfigItemKey = keyof AgbdConfig;
@@ -38,16 +45,6 @@ const BooleanItem = ({ label, isSelected }: ItemProps) => (
 	</Text>
 );
 
-const formatValue = (value: AgbdConfig[keyof AgbdConfig]) => {
-	if (Array.isArray(value)) {
-		return value.length > 0 ? value.join(", ") : "(not set)";
-	}
-	if (value === undefined || value === null || value === "") {
-		return "(not set)";
-	}
-	return String(value);
-};
-
 export const ConfigEditor = () => {
 	const { exit } = useApp();
 	const [config, setConfig] = useState<AgbdConfig | null>(null);
@@ -65,7 +62,13 @@ export const ConfigEditor = () => {
 
 	useEffect(() => {
 		(async () => {
-			const { config: loadedConfig } = await getConfig();
+			const { config: loadedConfig } = await loadConfig({
+				toolName: CONFIG_DIR_NAME,
+				configFile: CONFIG_FILE_NAME,
+				localConfigFile: LOCAL_CONFIG_FILE_NAME,
+				defaultConfig,
+				validate: validateConfig,
+			});
 			const fullConfig = { ...defaultConfig, ...loadedConfig };
 			setConfig(fullConfig);
 			setInitialConfig(JSON.parse(JSON.stringify(fullConfig)) as AgbdConfig);
@@ -188,7 +191,7 @@ export const ConfigEditor = () => {
 					(key) => key !== "schemaVersion" && key !== "detectedDefaultBranch",
 				)
 				.map((key) => ({
-					label: `${key}: ${formatValue(
+					label: `${key}: ${formatConfigValue(
 						config[key as keyof AgbdConfig] ??
 							(defaultConfig as AgbdConfig)[key as keyof AgbdConfig],
 					)}`,
@@ -256,7 +259,7 @@ export const ConfigEditor = () => {
 	const handleSave = async () => {
 		if (config) {
 			setStatus("saving");
-			await writeGlobalConfig(config);
+			await writeGlobalConfig(config, CONFIG_DIR_NAME, CONFIG_FILE_NAME);
 			setStatus("done");
 			exit();
 		}
