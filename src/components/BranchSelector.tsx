@@ -1,7 +1,7 @@
-import { type BranchInfo, formatDate } from "ag-toolkit";
+import { type BranchInfo, formatDate, useSearchFilter } from "ag-toolkit";
 import type { Key } from "ink";
 import { Box, Text, useInput } from "ink";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Props = {
 	branches: BranchInfo[];
@@ -11,7 +11,12 @@ type Props = {
 	label?: string;
 };
 
-const SEARCHABLE_FIELDS = ["name", "ref", "lastCommitSubject"] as const;
+const SEARCHABLE_FIELDS: (keyof BranchInfo)[] = [
+	"name",
+	"ref",
+	"lastCommitSubject",
+	"remote",
+];
 
 export const BranchSelector = ({
 	branches,
@@ -42,30 +47,11 @@ export const BranchSelector = ({
 		setCursor(0);
 	}, [branches, initialSelectedRefs]);
 
-	const filteredBranches = useMemo(() => {
-		if (!searchTerm.trim()) {
-			return branches;
-		}
-		const terms = searchTerm
-			.toLowerCase()
-			.split(/\s+/)
-			.filter((term) => term.length > 0);
-		if (terms.length === 0) {
-			return branches;
-		}
-		return branches.filter((branch) =>
-			terms.every(
-				(term) =>
-					SEARCHABLE_FIELDS.some((field) => {
-						const value = branch[field];
-						if (!value) {
-							return false;
-						}
-						return value.toLowerCase().includes(term);
-					}) || branch.remote?.toLowerCase().includes(term),
-			),
-		);
-	}, [branches, searchTerm]);
+	const filteredBranches = useSearchFilter(
+		branches,
+		searchTerm,
+		SEARCHABLE_FIELDS,
+	);
 
 	const visibleBranches = filteredBranches.slice(0, 200);
 
