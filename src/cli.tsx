@@ -2,20 +2,28 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import chalk from "chalk";
-import { render } from "ink";
-import App from "./app.js";
-import { ConfigEditor } from "./components/ConfigEditor.js";
-import { GitOperations } from "./git.js";
-import { ArgParser } from "./lib/arg-parser.js";
-import type { AgbdConfig } from "./lib/config.js";
 import {
-	defaultConfig,
-	GLOBAL_CONFIG_PATH,
-	getConfig,
+	ConfigEditor as AgToolkitConfigEditor,
+	ArgParser,
+	type ConfigItem,
+	GitOperations,
+	handleConfigCommand,
+	loadConfig,
 	loadLocalConfig,
 	resetGlobalConfig,
+	writeGlobalConfig,
 	writeLocalConfig,
+} from "ag-toolkit";
+import { render } from "ink";
+import App from "./app.js";
+import type { AgbdConfig } from "./lib/config.js";
+import {
+	CONFIG_DIR_NAME,
+	CONFIG_FILE_NAME,
+	defaultConfig,
+	GLOBAL_CONFIG_PATH,
+	LOCAL_CONFIG_FILE_NAME,
+	validateConfig,
 } from "./lib/config.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -90,6 +98,40 @@ const schema = {
 	},
 } as const;
 
+const agbdConfigItems: ConfigItem<AgbdConfig>[] = [
+	{ key: "remote", type: "boolean" },
+	{ key: "dryRun", type: "boolean" },
+	{ key: "yes", type: "boolean" },
+	{ key: "force", type: "boolean" },
+	{ key: "pattern", type: "string" },
+	{ key: "protectedBranches", type: "array" },
+	{ key: "defaultRemote", type: "string" },
+	{ key: "cleanupMergedDays", type: "number" },
+];
+
+const AgbdConfigEditor = () => {
+	return (
+		<AgToolkitConfigEditor
+			toolName="agbd"
+			configItems={agbdConfigItems}
+			defaultConfig={defaultConfig}
+			loadConfig={async () => {
+				const { config } = await loadConfig({
+					toolName: CONFIG_DIR_NAME,
+					configFile: CONFIG_FILE_NAME,
+					localConfigFile: LOCAL_CONFIG_FILE_NAME,
+					defaultConfig,
+					validate: validateConfig,
+				});
+				return config;
+			}}
+			writeConfig={(config) =>
+				writeGlobalConfig(config, CONFIG_DIR_NAME, CONFIG_FILE_NAME)
+			}
+		/>
+	);
+};
+
 const parseProtected = (value: string | undefined) =>
 	value
 		?.split(",")
@@ -128,61 +170,32 @@ try {
 
 	(async () => {
 		if (cli.flags.config) {
-			const command = cli.flags.config;
-			switch (command) {
-				case "show": {
-					const { config, sources } = await getConfig();
-					console.log("Current configuration:");
-					const sourceColors = {
-						default: chalk.gray,
-						global: chalk.blue,
-						local: chalk.green,
-					};
-					for (const key in config) {
-						const k = key as keyof typeof config;
-						const source = sources[k] || "default";
-						const color = sourceColors[source];
-						console.log(
-							`  ${chalk.cyan(k)}: ${chalk.yellow(
-								String(config[k]),
-							)} ${color(`(${source})`)}`,
-						);
-					}
-					break;
-				}
-				case "edit": {
-					// biome-ignore lint/complexity/useLiteralKeys: ProcessEnv requires bracket access when no specific typing exists
-					const editor = process.env["EDITOR"] || "vim";
-					const { spawn } = await import("node:child_process");
-					const child = spawn(editor, [GLOBAL_CONFIG_PATH], {
-						stdio: "inherit",
-						env: process.env,
-					});
-					child.on("exit", (code) => {
-						process.exit(code ?? 0);
-					});
-					return;
-				}
-				case "reset": {
-					await resetGlobalConfig();
-					console.log(`Configuration reset to default: ${GLOBAL_CONFIG_PATH}`);
-					break;
-				}
-				case "set": {
-					render(<ConfigEditor />);
-					return;
-				}
-				default:
-					console.error(`Unknown config command: ${command}`);
-					console.log("Available commands: show, edit, reset, set");
-					process.exit(1);
-			}
+			await handleConfigCommand(cli.flags.config, {
+				getConfig: () =>
+					loadConfig({
+						toolName: CONFIG_DIR_NAME,
+						configFile: CONFIG_FILE_NAME,
+						localConfigFile: LOCAL_CONFIG_FILE_NAME,
+						defaultConfig,
+						validate: validateConfig,
+					}),
+				getGlobalConfigPath: () => GLOBAL_CONFIG_PATH,
+				resetGlobalConfig: () =>
+					resetGlobalConfig(defaultConfig, CONFIG_DIR_NAME, CONFIG_FILE_NAME),
+				ConfigEditorComponent: AgbdConfigEditor,
+			});
 			return;
 		}
 
 		const { config } = cli.flags.noConfig
 			? { config: defaultConfig }
-			: await getConfig();
+			: await loadConfig({
+					toolName: CONFIG_DIR_NAME,
+					configFile: CONFIG_FILE_NAME,
+					localConfigFile: LOCAL_CONFIG_FILE_NAME,
+					defaultConfig,
+					validate: validateConfig,
+				});
 
 		const cliProtected = parseProtected(cli.flags.protected);
 		const resolvedDefaultRemote =
@@ -228,7 +241,7 @@ try {
 		if (cli.flags.saveDetectedDefault) {
 			if (detectedDefaultBranch) {
 				const { path: localConfigPath, config: existingLocalConfig } =
-					await loadLocalConfig();
+					await loadLocalConfig(LOCAL_CONFIG_FILE_NAME, validateConfig);
 				const nextLocalConfig: AgbdConfig = {
 					...(existingLocalConfig ?? {}),
 					detectedDefaultBranch,
@@ -239,7 +252,7 @@ try {
 						]),
 					),
 				};
-				await writeLocalConfig(nextLocalConfig, localConfigPath);
+				await writeLocalConfig(localConfigPath, nextLocalConfig);
 				const action = existingLocalConfig ? "Updated" : "Created";
 				console.log(
 					`${action} local config at ${localConfigPath} with detected default branch '${detectedDefaultBranch}'.`,

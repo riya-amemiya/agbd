@@ -1,10 +1,13 @@
+import {
+	type BranchInfo,
+	GitOperations,
+	matchPattern,
+	sanitizeString,
+} from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import Spinner from "ink-spinner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BranchSelector } from "./components/BranchSelector.js";
-import type { BranchInfo } from "./git.js";
-import { GitOperations } from "./git.js";
-import { sanitizeString } from "./lib/sanitizeString.js";
 
 interface Props {
 	pattern?: string;
@@ -77,20 +80,7 @@ const SuccessResults = ({
 const PROTECTED_DEFAULT = ["main", "master", "develop", "release"];
 
 const isProtected = (branch: BranchInfo, protectedList: string[]): boolean => {
-	return protectedList.some((pattern) => {
-		if (pattern.startsWith("/")) {
-			try {
-				const regex = new RegExp(
-					pattern.slice(1, pattern.lastIndexOf("/")),
-					pattern.slice(pattern.lastIndexOf("/") + 1),
-				);
-				return regex.test(branch.name);
-			} catch {
-				return false;
-			}
-		}
-		return branch.name === pattern;
-	});
+	return protectedList.some((pattern) => matchPattern(branch.name, pattern));
 };
 
 const filterByPattern = (branches: BranchInfo[], pattern?: string) => {
