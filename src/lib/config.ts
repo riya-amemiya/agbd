@@ -25,6 +25,7 @@ const configSchema = object({
 	cleanupMergedDays: optional(number()),
 	schemaVersion: optional(number()),
 	detectedDefaultBranch: optional(string()),
+	localOnly: optional(boolean()),
 });
 
 export type AgbdConfig = InferOutput<typeof configSchema>;
@@ -40,6 +41,7 @@ export const configKeys: (keyof AgbdConfig)[] = [
 	"cleanupMergedDays",
 	"detectedDefaultBranch",
 	"schemaVersion",
+	"localOnly",
 ] as const;
 
 export interface ConfigResult {
@@ -57,6 +59,7 @@ export const defaultConfig: Omit<AgbdConfig, "schemaVersion"> = {
 	defaultRemote: "origin",
 	cleanupMergedDays: undefined,
 	detectedDefaultBranch: undefined,
+	localOnly: false,
 };
 
 export const validateConfig = (config: unknown): AgbdConfig => {
