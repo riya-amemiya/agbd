@@ -38,6 +38,7 @@ Usage
 Options
     --pattern <regex>          Filter branches by name (regex or string)
     --remote                   Include remote branches
+    --local-only               Show only local branches without remote counterparts
     --dry-run                  Show what would be deleted, without deleting
     -y, --yes                  Skip confirmation prompts
     --force                    Force delete non-merged branches
@@ -56,6 +57,7 @@ Examples
   $ agbd --cleanup-merged 30
   $ agbd --yes --force --pattern 'bugfix/.*'
   $ agbd --config set
+  $ agbd --local-only
 `;
 
 const schema = {
@@ -63,6 +65,9 @@ const schema = {
 		type: "string",
 	},
 	remote: {
+		type: "boolean",
+	},
+	localOnly: {
 		type: "boolean",
 	},
 	dryRun: {
@@ -100,6 +105,7 @@ const schema = {
 
 const agbdConfigItems: ConfigItem<AgbdConfig>[] = [
 	{ key: "remote", type: "boolean" },
+	{ key: "localOnly", type: "boolean" },
 	{ key: "dryRun", type: "boolean" },
 	{ key: "yes", type: "boolean" },
 	{ key: "force", type: "boolean" },
@@ -269,6 +275,7 @@ try {
 		const props = {
 			pattern: cli.flags.pattern ?? config.pattern,
 			remote: cli.flags.remote ?? config.remote,
+			localOnly: cli.flags.localOnly ?? config.localOnly,
 			dryRun: cli.flags.dryRun ?? config.dryRun,
 			yes: cli.flags.yes ?? config.yes,
 			force: cli.flags.force ?? config.force,

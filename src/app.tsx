@@ -12,6 +12,7 @@ import { BranchSelector } from "./components/BranchSelector.js";
 interface Props {
 	pattern?: string;
 	remote?: boolean;
+	localOnly?: boolean;
 	dryRun?: boolean;
 	yes?: boolean;
 	force?: boolean;
@@ -111,6 +112,7 @@ const filterByAge = (branches: BranchInfo[], days?: number) => {
 export default function App({
 	pattern,
 	remote,
+	localOnly,
 	dryRun,
 	yes,
 	force,
@@ -273,13 +275,26 @@ export default function App({
 	useEffect(() => {
 		(async () => {
 			try {
-				const [currentBranch, infos] = await Promise.all([
-					gitOps.getCurrentBranch(),
-					gitOps.getBranchInfos({ includeRemote: remote }),
-				]);
+				const currentBranch = await gitOps.getCurrentBranch();
+
+				let infos: BranchInfo[];
+				if (localOnly) {
+					const [localInfos, remoteBranchNames] = await Promise.all([
+						gitOps.getBranchInfos({ includeRemote: false }),
+						gitOps.getAllBranches(),
+					]);
+					const remoteBranchNamesSet = new Set(remoteBranchNames);
+					infos = localInfos.filter(
+						(branch) => !remoteBranchNamesSet.has(branch.name),
+					);
+				} else {
+					infos = await gitOps.getBranchInfos({ includeRemote: remote });
+				}
+
 				const filtered = infos.filter(
 					(branch) => branch.name !== currentBranch,
 				);
+
 				const finalList = defaultRemote
 					? filtered.map((branch) =>
 							branch.type === "remote" && !branch.remote
@@ -302,6 +317,7 @@ export default function App({
 		gitOps,
 		handleError,
 		remote,
+		localOnly,
 		startAutoMode,
 		startInteractiveMode,
 	]);
@@ -404,15 +420,13 @@ export default function App({
 
 	useEffect(() => {
 		if (state.status === "success") {
-			if (!dryRun) {
-				setTimeout(() => exit(), 100);
-			}
+			setTimeout(() => exit(), 100);
 			return;
 		}
 		if (state.status === "error") {
 			exit(new Error(state.message));
 		}
-	}, [dryRun, exit, state.status, state.message]);
+	}, [exit, state.status, state.message]);
 
 	const sanitizedMessage = sanitizeString(state.message);
 

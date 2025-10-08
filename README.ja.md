@@ -20,6 +20,7 @@ agbd [options]
 
 - `--pattern <regex>`: ブランチ名を正規表現でフィルタ（正規表現エラー時は部分一致）
 - `--remote`: リモートブランチも対象に含める（デフォルト: ローカルのみ）
+- `--local-only`: リモートに存在しないローカルブランチのみを表示
 - `--dry-run`: 実際に削除せず、対象ブランチの一覧のみ表示
 - `-y, --yes`: 確認プロンプトをスキップして即実行
 - `--force`: 未マージブランチも強制削除（ローカルのみ）
@@ -45,6 +46,7 @@ agbd [options]
 `--no-config` を付けると設定ファイルを読み込みません。設定項目：
 
 - `remote`: boolean
+- `localOnly`: boolean
 - `dryRun`: boolean
 - `yes`: boolean
 - `force`: boolean
@@ -75,6 +77,9 @@ agbd --pattern 'bugfix/' --force --yes
 
 # main/master/develop を除いてマージ済みブランチを削除
 agbd --cleanup-merged 0 --protected main,master,develop
+
+# リモートに存在しないローカルブランチのみを表示
+agbd --local-only
 ```
 
 ## 動作の概要

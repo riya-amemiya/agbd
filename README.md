@@ -22,6 +22,7 @@ agbd [options]
 
 - `--pattern <regex>`: Filter branches by regular expression (fallback to substring match on invalid regex)
 - `--remote`: Include remote branches (default: local only)
+- `--local-only`: Show only local branches without remote counterparts
 - `--dry-run`: Show deletion plan without modifying branches
 - `-y, --yes`: Skip confirmation prompts and execute immediately
 - `--force`: Force delete even when branches are not merged (local only)
@@ -47,6 +48,7 @@ agbd supports layered configuration with the following priority (highest first):
 Use `--no-config` to disable config loading. Values include:
 
 - `remote`: boolean
+- `localOnly`: boolean
 - `dryRun`: boolean
 - `yes`: boolean
 - `force`: boolean
@@ -77,6 +79,9 @@ agbd --pattern 'bugfix/' --force --yes
 
 # Remove fully merged branches except main/master/develop
 agbd --cleanup-merged 0 --protected main,master,develop
+
+# Show only local branches without remote counterparts
+agbd --local-only
 ```
 
 ## How it works
