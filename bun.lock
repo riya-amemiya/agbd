@@ -14,7 +14,7 @@
       },
       "devDependencies": {
         "@biomejs/biome": "2.2.6",
-        "@sindresorhus/tsconfig": "8.0.1",
+        "@sindresorhus/tsconfig": "8.1.0",
         "@types/bun": "1.3.0",
         "@types/react": "19.2.2",
         "chalk": "5.6.2",
@@ -57,7 +57,7 @@
 
     "@kwsites/promise-deferred": ["@kwsites/promise-deferred@1.1.1", "", {}, "sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw=="],
 
-    "@sindresorhus/tsconfig": ["@sindresorhus/tsconfig@8.0.1", "", {}, "sha512-EcJpJuPR+Ot2DGJwQNRMVrWMxiYluGEQrgHeFHvKkKJcHCL/J3fmAKtN5WmAHIN7oxtwSEvNfjJgwffmxKBw9Q=="],
+    "@sindresorhus/tsconfig": ["@sindresorhus/tsconfig@8.1.0", "", {}, "sha512-MggpguA4jNdtyoUy2Hs54nb4lP4rbhH34CsOiFId1q6fmFPnipqeo70ZRkjp5p4Z7wdyspALtSAcKaxL2/3waQ=="],
 
     "@tsconfig/node10": ["@tsconfig/node10@1.0.11", "", {}, "sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw=="],
 
