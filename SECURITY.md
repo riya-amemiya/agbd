@@ -6,11 +6,12 @@ We currently support the following versions of agbd with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.5.x   | ✅ Yes              |
-| 0.4.x   | ❌ No              |
-| 0.3.x   | ❌ No              |
-| 0.2.x   | ❌ No              |
-| 0.1.x   | ❌ No              |
+| 0.6.x   | ✅ Yes |
+| 0.5.x   | ❌ No |
+| 0.4.x   | ❌ No |
+| 0.3.x   | ❌ No |
+| 0.2.x   | ❌ No |
+| 0.1.x   | ❌ No |
 | 0.0.x   | ❌ No |
 
 ## Reporting a Vulnerability
