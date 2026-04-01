@@ -4,7 +4,9 @@
 		"strict": true,
 		"esModuleInterop": true,
 		"outDir": "dist",
-		"jsx": "react-jsx"
+		"rootDir": "src",
+		"jsx": "react-jsx",
+		"types": ["bun"]
 	},
 	"include": ["src"]
 }
