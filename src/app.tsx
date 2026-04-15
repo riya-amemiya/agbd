@@ -424,9 +424,10 @@ export default function App({
 			return;
 		}
 		if (state.status === "error") {
-			exit(new Error(state.message));
+			process.exitCode = 1;
+			exit();
 		}
-	}, [exit, state.status, state.message]);
+	}, [exit, state.status]);
 
 	const sanitizedMessage = sanitizeString(state.message);
 
