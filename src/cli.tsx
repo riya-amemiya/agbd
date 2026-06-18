@@ -42,7 +42,7 @@ Options
     --dry-run                  Show what would be deleted, without deleting
     -y, --yes                  Skip confirmation prompts
     --force                    Force delete non-merged branches
-    --protected <list>         Comma-separated list of protected branches
+    --protected <list>         Comma-separated protected branches (exact, prefix "name/", or /regex/flags)
     --default-remote <name>    Default remote name (used if remote=true)
     --cleanup-merged <days>    Filter branches older than N days
     --detect-default           Detect default branch and protect it for this run

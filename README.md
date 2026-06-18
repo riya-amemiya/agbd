@@ -86,7 +86,7 @@ agbd --local-only
 
 ## How it works
 
-agbd enumerates local (and optionally remote) branches via Git plumbing commands. Each branch displays last commit time, subject, and merged status. Protection rules let you exclude critical branches by exact match or regex (`/regex/flags`).
+agbd enumerates local (and optionally remote) branches via Git plumbing commands. Each branch displays last commit time, subject, and merged status. Protection rules let you exclude critical branches by exact match, by prefix (a bare name like `release` also protects everything under `release/`), or by regex (`/regex/flags`).
 
 Interactive mode uses Ink to present a multi-select list. You can filter by typing, toggle selection with Space, and confirm with Enter. Auto mode (triggered by specifying `--pattern`, `--cleanup-merged`, or `--yes`) can run non-interactively.
 
