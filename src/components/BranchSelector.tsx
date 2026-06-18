@@ -142,8 +142,8 @@ export const BranchSelector = ({
 				<Text color="yellow">No matching branches found.</Text>
 			) : (
 				<Box flexDirection="column">
-					{visibleBranches.map((branch) => {
-						const isActive = filteredBranches.indexOf(branch) === cursor;
+					{visibleBranches.map((branch, index) => {
+						const isActive = index === cursor;
 						const isSelected = selectedRefs.has(branch.ref);
 						const mark = isActive ? "›" : " ";
 						const checkbox = isSelected ? "[x]" : "[ ]";
