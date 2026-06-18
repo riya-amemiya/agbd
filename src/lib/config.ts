@@ -55,7 +55,7 @@ export const defaultConfig: Omit<AgbdConfig, "schemaVersion"> = {
 	yes: false,
 	force: false,
 	pattern: undefined,
-	protectedBranches: ["main", "master", "develop"],
+	protectedBranches: ["main", "master", "develop", "release"],
 	defaultRemote: "origin",
 	cleanupMergedDays: undefined,
 	detectedDefaultBranch: undefined,

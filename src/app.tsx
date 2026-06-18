@@ -78,10 +78,29 @@ const SuccessResults = ({
 	);
 };
 
+const PlanItemLine = ({ branch }: { branch: BranchInfo }) => {
+	const typeLabel =
+		branch.type === "local" ? "local" : `remote(${branch.remote ?? "?"})`;
+	return (
+		<Text>
+			- {branch.name} <Text color="gray">[{typeLabel}]</Text>{" "}
+			{branch.isMerged ? (
+				<Text color="green">✓ merged</Text>
+			) : (
+				<Text color="yellow">⚠ unmerged</Text>
+			)}
+		</Text>
+	);
+};
+
 const PROTECTED_DEFAULT = ["main", "master", "develop", "release"];
 
 const isProtected = (branch: BranchInfo, protectedList: string[]): boolean => {
-	return protectedList.some((pattern) => matchPattern(branch.name, pattern));
+	return protectedList.some(
+		(pattern) =>
+			matchPattern(branch.name, pattern) ||
+			(!pattern.startsWith("/") && branch.name.startsWith(`${pattern}/`)),
+	);
 };
 
 const filterByPattern = (branches: BranchInfo[], pattern?: string) => {
@@ -103,7 +122,7 @@ const filterByAge = (branches: BranchInfo[], days?: number) => {
 	const threshold = Date.now() - days * 24 * 60 * 60 * 1000;
 	return branches.filter((branch) => {
 		if (!branch.lastCommitDate) {
-			return true;
+			return false;
 		}
 		return branch.lastCommitDate.getTime() <= threshold;
 	});
@@ -126,7 +145,7 @@ export default function App({
 	const [state, setState] = useState<State>({
 		status: "loading",
 		message: "Initializing...",
-		mode: pattern ? "auto" : "interactive",
+		mode: pattern || cleanupMergedDays !== undefined ? "auto" : "interactive",
 		availableBranches: [],
 		selectedBranches: [],
 		plan: [],
@@ -329,7 +348,7 @@ export default function App({
 					return false;
 				}
 				if (
-					!force &&
+					branch.type === "local" &&
 					state.currentBranch &&
 					branch.name === state.currentBranch
 				) {
@@ -358,7 +377,7 @@ export default function App({
 				selectedBranches: filtered,
 			}));
 		},
-		[buildPlan, executePlan, force, protectedList, state.currentBranch, yes],
+		[buildPlan, executePlan, protectedList, state.currentBranch, yes],
 	);
 
 	const handleConfirm = useCallback(() => {
@@ -465,7 +484,7 @@ export default function App({
 						{state.plan.length > 0 && (
 							<Box flexDirection="column" marginTop={1} paddingLeft={2}>
 								{state.plan.slice(0, 10).map((item) => (
-									<Text key={item.branch.ref}>- {item.branch.name}</Text>
+									<PlanItemLine key={item.branch.ref} branch={item.branch} />
 								))}
 								{state.plan.length > 10 && (
 									<Text color="gray">...and {state.plan.length - 10} more</Text>
@@ -480,7 +499,7 @@ export default function App({
 						{state.plan.length > 0 && (
 							<Box flexDirection="column" marginTop={1} paddingLeft={2}>
 								{state.plan.map((item) => (
-									<Text key={item.branch.ref}>- {item.branch.name}</Text>
+									<PlanItemLine key={item.branch.ref} branch={item.branch} />
 								))}
 							</Box>
 						)}
