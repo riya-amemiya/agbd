@@ -1,13 +1,13 @@
-import {
-	type BranchInfo,
-	GitOperations,
-	matchPattern,
-	sanitizeString,
-} from "ag-toolkit";
+import { type BranchInfo, GitOperations, sanitizeString } from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import Spinner from "ink-spinner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BranchSelector } from "./components/BranchSelector.js";
+import {
+	filterByAge,
+	filterByPattern,
+	isProtected,
+} from "./lib/branchFilters.js";
 
 interface Props {
 	pattern?: string;
@@ -94,39 +94,6 @@ const PlanItemLine = ({ branch }: { branch: BranchInfo }) => {
 };
 
 const PROTECTED_DEFAULT = ["main", "master", "develop", "release"];
-
-const isProtected = (branch: BranchInfo, protectedList: string[]): boolean => {
-	return protectedList.some(
-		(pattern) =>
-			matchPattern(branch.name, pattern) ||
-			(!pattern.startsWith("/") && branch.name.startsWith(`${pattern}/`)),
-	);
-};
-
-const filterByPattern = (branches: BranchInfo[], pattern?: string) => {
-	if (!pattern) {
-		return branches;
-	}
-	try {
-		const regex = new RegExp(pattern);
-		return branches.filter((branch) => regex.test(branch.name));
-	} catch {
-		return branches.filter((branch) => branch.name.includes(pattern));
-	}
-};
-
-const filterByAge = (branches: BranchInfo[], days?: number) => {
-	if (!days || days <= 0) {
-		return branches;
-	}
-	const threshold = Date.now() - days * 24 * 60 * 60 * 1000;
-	return branches.filter((branch) => {
-		if (!branch.lastCommitDate) {
-			return false;
-		}
-		return branch.lastCommitDate.getTime() <= threshold;
-	});
-};
 
 export default function App({
 	pattern,
