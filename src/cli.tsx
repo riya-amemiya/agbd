@@ -233,7 +233,7 @@ try {
 				const { path: localConfigPath, config: existingLocalConfig } =
 					await loadLocalConfig(LOCAL_CONFIG_FILE_NAME, validateConfig);
 				const nextLocalConfig: AgbdConfig = {
-					...(existingLocalConfig ?? {}),
+					...existingLocalConfig,
 					detectedDefaultBranch,
 					protectedBranches: Array.from(
 						new Set([

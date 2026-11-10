@@ -1,7 +1,7 @@
 import { type BranchInfo, formatDate, useSearchFilter } from "ag-toolkit";
 import type { Key } from "ink";
 import { Box, Text, useInput } from "ink";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 type Props = {
 	branches: BranchInfo[];
@@ -36,7 +36,15 @@ export const BranchSelector = ({
 			),
 	);
 
-	useEffect(() => {
+	const [previousInputs, setPreviousInputs] = useState({
+		branches,
+		initialSelectedRefs,
+	});
+	if (
+		previousInputs.branches !== branches ||
+		previousInputs.initialSelectedRefs !== initialSelectedRefs
+	) {
+		setPreviousInputs({ branches, initialSelectedRefs });
 		setSelectedRefs(
 			new Set(
 				initialSelectedRefs && initialSelectedRefs.length > 0
@@ -45,7 +53,7 @@ export const BranchSelector = ({
 			),
 		);
 		setCursor(0);
-	}, [branches, initialSelectedRefs]);
+	}
 
 	const filteredBranches = useSearchFilter(
 		branches,
@@ -153,7 +161,7 @@ export const BranchSelector = ({
 								: `remote(${branch.remote ?? "?"})`;
 						const mergedLabel = branch.isMerged ? "✓" : " ";
 						return (
-							<Text key={branch.ref} color={isActive ? "cyan" : undefined}>
+							<Text key={branch.ref} {...(isActive ? { color: "cyan" } : {})}>
 								{mark} {checkbox} {branch.name}
 								{(branch.ahead > 0 || branch.behind > 0) && (
 									<Text color="yellow">
