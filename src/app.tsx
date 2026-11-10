@@ -1,7 +1,14 @@
 import { type BranchInfo, GitOperations, sanitizeString } from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import Spinner from "ink-spinner";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { BranchSelector } from "./components/BranchSelector.js";
 import {
 	filterByAge,
@@ -10,15 +17,15 @@ import {
 } from "./lib/branchFilters.js";
 
 interface Props {
-	pattern?: string;
-	remote?: boolean;
-	localOnly?: boolean;
-	dryRun?: boolean;
-	yes?: boolean;
-	force?: boolean;
-	protectedBranches?: string[];
-	defaultRemote?: string;
-	cleanupMergedDays?: number;
+	pattern?: string | undefined;
+	remote?: boolean | undefined;
+	localOnly?: boolean | undefined;
+	dryRun?: boolean | undefined;
+	yes?: boolean | undefined;
+	force?: boolean | undefined;
+	protectedBranches?: string[] | undefined;
+	defaultRemote?: string | undefined;
+	cleanupMergedDays?: number | undefined;
 }
 
 type Status =
@@ -120,7 +127,9 @@ export default function App({
 	});
 
 	const stateRef = useRef(state);
-	stateRef.current = state;
+	useLayoutEffect(() => {
+		stateRef.current = state;
+	}, [state]);
 
 	const protectedList = useMemo(() => {
 		if (protectedBranches && protectedBranches.length > 0) {
@@ -170,7 +179,7 @@ export default function App({
 						});
 					} else {
 						await gitOps.deleteLocalBranch(branch.name, {
-							force: forceOverride || force,
+							force: forceOverride === true || force === true,
 						});
 					}
 					results.push({ branch, success: true });
@@ -274,7 +283,9 @@ export default function App({
 						(branch) => !remoteBranchNamesSet.has(branch.name),
 					);
 				} else {
-					infos = await gitOps.getBranchInfos({ includeRemote: remote });
+					infos = await gitOps.getBranchInfos({
+						includeRemote: remote === true,
+					});
 				}
 
 				const filtered = infos.filter(
