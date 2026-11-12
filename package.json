@@ -16,9 +16,9 @@
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsc --watch",
-		"test": "biome check .",
-		"lint": "biome check . --write",
-		"ci": "biome ci .",
+		"test": "oxlint && oxfmt --check",
+		"lint": "oxlint --fix && oxfmt",
+		"ci": "oxlint && oxfmt --check",
 		"prepublishOnly": "npm run build"
 	},
 	"files": [
@@ -51,12 +51,13 @@
 		"ink-spinner": "5.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.5",
 		"@sindresorhus/tsconfig": "9.0.0",
 		"@types/bun": "1.4.4",
 		"@types/react": "19.3.0",
 		"chalk": "6.0.1",
 		"ink-testing-library": "4.0.0",
+		"oxfmt": "0.78.0",
+		"oxlint": "1.93.0",
 		"ts-node": "10.9.2",
 		"typescript": "7.0.2"
 	}

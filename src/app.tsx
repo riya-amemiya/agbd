@@ -1,7 +1,14 @@
 import { type BranchInfo, GitOperations, sanitizeString } from "ag-toolkit";
 import { Box, Text, useApp, useInput } from "ink";
 import Spinner from "ink-spinner";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { BranchSelector } from "./components/BranchSelector.js";
 import {
 	filterByAge,
@@ -120,7 +127,9 @@ export default function App({
 	});
 
 	const stateRef = useRef(state);
-	stateRef.current = state;
+	useLayoutEffect(() => {
+		stateRef.current = state;
+	}, [state]);
 
 	const protectedList = useMemo(() => {
 		if (protectedBranches && protectedBranches.length > 0) {
