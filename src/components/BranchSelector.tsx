@@ -153,7 +153,7 @@ export const BranchSelector = ({
 								: `remote(${branch.remote ?? "?"})`;
 						const mergedLabel = branch.isMerged ? "✓" : " ";
 						return (
-							<Text key={branch.ref} color={isActive ? "cyan" : undefined}>
+							<Text key={branch.ref} {...(isActive && { color: "cyan" })}>
 								{mark} {checkbox} {branch.name}
 								{(branch.ahead > 0 || branch.behind > 0) && (
 									<Text color="yellow">

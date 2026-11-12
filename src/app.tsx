@@ -10,15 +10,15 @@ import {
 } from "./lib/branchFilters.js";
 
 interface Props {
-	pattern?: string;
-	remote?: boolean;
-	localOnly?: boolean;
-	dryRun?: boolean;
-	yes?: boolean;
-	force?: boolean;
-	protectedBranches?: string[];
-	defaultRemote?: string;
-	cleanupMergedDays?: number;
+	pattern?: string | undefined;
+	remote?: boolean | undefined;
+	localOnly?: boolean | undefined;
+	dryRun?: boolean | undefined;
+	yes?: boolean | undefined;
+	force?: boolean | undefined;
+	protectedBranches?: string[] | undefined;
+	defaultRemote?: string | undefined;
+	cleanupMergedDays?: number | undefined;
 }
 
 type Status =
@@ -170,7 +170,7 @@ export default function App({
 						});
 					} else {
 						await gitOps.deleteLocalBranch(branch.name, {
-							force: forceOverride || force,
+							force: forceOverride === true || force === true,
 						});
 					}
 					results.push({ branch, success: true });
@@ -274,7 +274,9 @@ export default function App({
 						(branch) => !remoteBranchNamesSet.has(branch.name),
 					);
 				} else {
-					infos = await gitOps.getBranchInfos({ includeRemote: remote });
+					infos = await gitOps.getBranchInfos({
+						includeRemote: remote === true,
+					});
 				}
 
 				const filtered = infos.filter(
