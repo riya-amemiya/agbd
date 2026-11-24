@@ -41,7 +41,7 @@
 		"ink-select-input": "6.2.0",
 		"ink-spinner": "5.0.0",
 		"react": "19.3.1",
-		"simple-git": "4.0.2",
+		"simple-git": "4.1.0",
 		"valibot": "1.5.0"
 	},
 	"overrides": {
@@ -52,12 +52,12 @@
 	},
 	"devDependencies": {
 		"@sindresorhus/tsconfig": "9.0.0",
-		"@types/bun": "1.4.4",
+		"@types/bun": "1.4.5",
 		"@types/react": "19.3.0",
 		"chalk": "6.0.1",
 		"ink-testing-library": "4.0.0",
-		"oxfmt": "0.78.0",
-		"oxlint": "1.93.0",
+		"oxfmt": "0.79.0",
+		"oxlint": "1.94.0",
 		"ts-node": "10.9.2",
 		"typescript": "7.0.2"
 	}
